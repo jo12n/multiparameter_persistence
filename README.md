@@ -1,4 +1,4 @@
-# Multiparameter Persistence on Medical Imaging: A Cubical Bifiltration Approach.
+# Multiparameter Persistence on Medical Imaging: A Cubical Bifiltration Approach
 
 ## Table of Contents
 * [Getting Started](#getting-started)
@@ -25,11 +25,17 @@ multiparameter_persistence/
 ```
 ### Installation
 Clone the repository and set up a virtual environment:
-```
+```bash
 git clone https://github.com/jo12n/multiparameter_persistence.git
 cd multiparameter_persistence
+# On Linux / macOS:
 python -m venv .venv
-source .venv/bin/activate  # On Windows (PowerShell): .\.venv\Scripts\Activate.ps1 
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# On Windows (PowerShell):
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
@@ -111,7 +117,7 @@ $$\{\mathcal{B}(\mathcal{M}_k|_L) \mid L \in \mathcal{L}\}$$
 **Definition:** Given the fibered barcode $\{\mathcal{B}(\mathcal{M}_k|_L) \mid L \in \mathcal{L}\}$ of the $k$-th persistence module $\mathcal{M}_k$, the *multiparameter fibered persistence landscape* of $\mathcal{M}_k$ is defined as the collection $\{\lambda_{k, L} \mid L \in \mathcal{L}\}$, where each $\lambda_{k, L}: \mathbb{N} \times \mathbb{R} \to [0, \infty)$ is the 1D persistence landscape associated with the line $L$, given by:
 $$\lambda_{k, L}(q,\tau) = \sup \{ h \ge 0 \mid [\tau - h, \tau + h] \subseteq I \text{ for at least } q \text{ distinct intervals } I \in \mathcal{B}(\mathcal{M}_k|_L) \}$$
 
-> **Remark on Essential Classes:** In computational implementations, classes with infinite persistence (such as the essential class in $H_0$ where $d = \infty$) are capped at the maximum filtration parameter along the slicing trajectory (in this project, $d = s_{\max} = 1.15$). This truncation ensures that all landscape functions $\lambda_{k, L}(q, \tau)$ maintain compact support on the evaluated domain.
+> **Remark on Essential Classes:** In computational implementations, classes with infinite persistence (such as the essential class in $H_0$ where $d = \infty$) are capped at the maximum filtration parameter along the slicing trajectory (in this project, $d = s_{\max} = 4.60$). This truncation ensures that all landscape functions $\lambda_{k, L}(q, \tau)$ maintain compact support on the evaluated domain.
 
 ### Computational Pipeline and Practical Scope
 
@@ -120,7 +126,7 @@ In practical applications of multiparameter TDA, the theoretical framework is ty
 **Scope of this project:**  
 Rather than deploying a large-scale benchmarking or classification pipeline, this repository focuses on providing a self-contained, illustrative implementation of the mathematical framework on 2D medical data. Specifically, the workflow implemented here consists of:
 1. Constructing the ambient cubical complex $K$ from a sample medical image and evaluating the discrete bifiltration via the Signed Euclidean Distance Transform (SEDT).
-2. Selecting a representative admissible slicing line $L \in \mathcal{L}$, tracing a specific balance between intensity thresholding and morphological scale. In this project, $$L(s) = (a_0 - s \cdot v_a, \, t_0 + s \cdot v_t), \quad s \in [s_{\min}, s_{\max}],$$ with $v_a = 0.75$, $v_t = 4.0$, $a_0 = 0.85$ and $t_0 = -1.5$.
+2. Selecting a representative admissible slicing line $L \in \mathcal{L}$, tracing a specific balance between intensity thresholding and morphological scale. In this project, $$L(s) = (a_0 - s \cdot v_a, \, t_0 + s \cdot v_t), \quad s \in [s_{\min}, s_{\max}],$$ parameterized isometrically ($\|v\|_\infty = 1.0$) with $v_a = 0.1875$, $v_t = 1.0$, $a_0 = 0.85$, $t_0 = -1.5$ and $s \in [0.0, 4.60]$.
 3. Computing the restricted 1-parameter persistence module $\mathcal{M}_k\vert{}_L$ using $\mathbb{Z}/2\mathbb{Z}$ coefficients for $k \in \{0, 1\}$ via the **GUDHI** library cubical complex engine (`gudhi.CubicalComplex`).
 4. Extracting, vectorizing, and visualizing the resulting 1D persistence landscape $\lambda_{k, L}$ along this trajectory using GUDHI vector representations (`gudhi.representations.Landscape`).
 
@@ -134,10 +140,10 @@ To illustrate the mathematical pipeline, the companion notebook (`notebooks/mult
 
 ### Topological Interpretation of the Sliced Filtration
 
-1. **Morphological Subcomplex Evolution:** The Signed Euclidean Distance Transform (SEDT) on superlevel sets $V_a$ produces a monotone inclusion sequence along the slicing line $L(s) = (a(s), t(s))$. High thresholds combined with spatial erosion ($t < 0$) isolate the brightest anatomical focal points, while subsequent dilation ($t > 0$) progressively fuses adjacent components. In panel (a), the cyan contour highlights the intermediate thickened boundary $V_{a, t}$ evaluated along the slicing line at $s = 0.60$, corresponding to $(a, t) = (0.40, 0.90)$.
+1. **Morphological Subcomplex Evolution:** The Signed Euclidean Distance Transform (SEDT) on superlevel sets $V_a$ produces a monotone inclusion sequence along the slicing line $L(s) = (a(s), t(s))$. High thresholds combined with spatial erosion ($t < 0$) isolate the brightest anatomical focal points, while subsequent dilation ($t > 0$) progressively fuses adjacent components. In panel (a), the cyan contour highlights the intermediate thickened boundary $V_{a, t}$ evaluated along the slicing line at $s = 2.40$, corresponding to $(a, t) = (0.40, 0.90)$ (which on the discrete pixel lattice matches the superlevel set $V_{0.40}$ immediately prior to spatial dilation at $t \ge 1.0$).
 2. **Persistence Barcode ($\mathcal{B}(\mathcal{M}_k\vert{}_L)$):** 
    - In degree $k = 0$, the barcode identifies an essential class spanning the full filtration parameter alongside a prominent finite bar, capturing the persistent secondary focal component before merging into the connected background. Shorter bars correspond to localized intensity fluctuations.
-   - In degree $k = 1$, transient micro-loops appear within a narrow window ($\tau \in [0.55, 0.72]$). Due to the discrete $28 \times 28$ lattice resolution, these features represent short-lived topological boundary fluctuations rather than macroscopic vascular loops.
+   - In degree $k = 1$, transient micro-loops appear within a narrow window ($\tau \in [2.17, 2.86]$). Due to the discrete $28 \times 28$ lattice resolution, these features represent short-lived topological boundary fluctuations rather than macroscopic vascular loops.
 3. **Bubenik Persistence Landscapes ($\lambda_{k, L}$):** The evaluated landscape curves directly reflect this hierarchy. In $\lambda_{0, L}$, layers $q = 1$ and $q = 2$ exhibit clear non-zero support capturing multi-component coexistence, while $q = 3$ displays minor local peaks. In contrast, $\lambda_{1, L}$ presents near-zero amplitude, quantitatively distinguishing dominant biological features from discretization artifacts. Furthermore, for landscape layers $q \ge 4$, $\lambda_{0, L}(q, \tau) = 0$ over the evaluated domain.
 
 ## References
@@ -156,3 +162,6 @@ To illustrate the mathematical pipeline, the companion notebook (`notebooks/mult
 
 <a id="ref-5"></a>
 [5] Yang, J., Shi, R., Wei, D., Liu, Z., Zhao, L., Ke, B., Pfister, H., & Ni, B. (2023). MedMNIST v2: A large-scale lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data, 10(1), 41.
+
+<a id="ref-6"></a>
+[6] Bubenik, P. (2015). Statistical topological data analysis using persistence landscapes. Journal of Machine Learning Research, 16(1), 77-102.

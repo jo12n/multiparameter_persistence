@@ -1,4 +1,5 @@
 .venv/
+# Local reference papers (not tracked to avoid repository bloat and copyright issues)
 papers/
 .ipynb_checkpoints/
 __pycache__/
